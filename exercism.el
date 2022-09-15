@@ -20,6 +20,13 @@
   :type 'string
   :group 'exercism)
 
+(defcustom exercism-directory
+  (cond ((eq system-type 'darwin) "~/Exercism")
+        (t "~/exercism"))
+  "File path containing downloaded Exercism files."
+  :type 'string
+  :group 'exercism)
+
 (defun exercism--configure (api-token)
   "Configure excerism with API-TOKEN."
   (setq exercism--api-token api-token)
