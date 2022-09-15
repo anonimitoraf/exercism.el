@@ -90,16 +90,6 @@ ON-SUCCESS is a fn that gets called with the exercise slugs."
   (interactive)
   (exercism--submit (buffer-file-name)))
 
-;; ---- REPL manual tests ----
 
-(defmacro exercism--comment (&rest _body)
-  "Comment out one or more s-expressions."
-  nil)
-
-(exercism--comment
- (exercism--list-exercises "erlang" (-partial 'message "exercises %s"))
- (exercism-download))
-
-;; -----
 
 (provide 'exercism)
