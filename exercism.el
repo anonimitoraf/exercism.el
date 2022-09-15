@@ -28,7 +28,7 @@
       ,(async-inject-variables "exercism.*")
       (shell-command-to-string (concat exercism-executable
                                        " configure"
-                                       " --token " api-token)))
+                                       " --token " exercism--api-token)))
    (lambda (result) (message "[exercism] configure: %s" result))))
 
 (defun exercism-configure ()
