@@ -15,6 +15,8 @@
  exercism--exercises-by-track (a-list)
  "An a-list of exercises grouped by track by suggested order of completion.")
 
+(persist-defvar exercism--current-track nil "Current track.")
+
 (defcustom exercism-executable "exercism"
   "Executable name/location."
   :type 'string
@@ -97,6 +99,22 @@ ON-SUCCESS is a fn that gets called with the exercise slugs."
   (interactive)
   (exercism--submit (buffer-file-name)))
 
+(defun exercism-set-track ()
+  "Set the current track that you intend to do exercises for."
+  (interactive)
+  (let* ((tracks (directory-files exercism-directory nil "\\w+"))
+        (track (completing-read "Choose track: " tracks (cl-constantly t) t)))
+    (setq exercism--current-track track)))
+
+(defun exercism-open-exercise ()
+  "Open an exercise from the currently selected track."
+  (interactive)
+  (unless exercism--current-track (exercism-set-track))
+  (let* ((dir (expand-file-name exercism--current-track exercism-directory))
+         (exercises (directory-files dir nil "\\w+"))
+         (exercise (completing-read (format "Choose %s exercise: " exercism--current-track)
+                                    exercises (cl-constantly t) t)))
+    (find-file (expand-file-name exercise dir))))
 
 
 (provide 'exercism)
