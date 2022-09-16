@@ -156,8 +156,7 @@ you to complete your solution."
    ;; TODO Use a transient flag instead of a separate prefix
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
 
+;; TODO Do not download all exercises at once. Do it on-demand!
 ;; TODO Command to update CLI
-;; TODO Auto-run tests before submitting
-;; TODO List the count of downloaded exercises
 
 (provide 'exercism)

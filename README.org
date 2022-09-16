@@ -1,0 +1,3 @@
+#+title: exercism.el
+* Known Limitations
+- Registering yourself to a track isn't currently supported. You'll have to do this via [[https://exercism.org/tracks][their web app]], sorry!
