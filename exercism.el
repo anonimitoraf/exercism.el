@@ -7,6 +7,17 @@
 (require 'persist)
 (require 'transient)
 
+(defun exercism--run-shell-command (shell-cmd &optional callback)
+  "Run SHELL-CMD asynchronously, calling CALLBACK if defined.
+Otherwise, just echoes the output."
+  (async-start
+   `(lambda ()
+      ,(async-inject-variables "exercism.*")
+      (shell-command-to-string shell-cmd))
+   (lambda (result)
+     (if callback (funcall callback result)
+       (message "[exercism shell cmd]: %s" result)))))
+
 (defvar exercism--api-token)
 (defvar exercism--exercise-slug)
 (defvar exercism--track-slug)
