@@ -5,6 +5,7 @@
 (require 'request)
 (require 'async)
 (require 'persist)
+(require 'transient)
 
 (defvar exercism--api-token)
 (defvar exercism--exercise-slug)
@@ -116,5 +117,13 @@ ON-SUCCESS is a fn that gets called with the exercise slugs."
                                     exercises (cl-constantly t) t)))
     (find-file (expand-file-name exercise dir))))
 
+(transient-define-prefix exercism ()
+  "Bring up the Exercism action menu."
+  ["Exercism actions"
+   ("c" "Configure" exercism-configure)
+   ("d" "Download exercises" exercism-download)
+   ("t" "Set current track" exercism-set-track)
+   ("o" "Open an exercise" exercism-open-exercise)
+   ("s" "Submit current file/directory as implementation" exercism-submit)])
 
 (provide 'exercism)
