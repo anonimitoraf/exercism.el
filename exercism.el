@@ -95,8 +95,10 @@ ON-SUCCESS is a fn that gets called with the exercise slugs."
                                 (persist-save 'exercism--exercises-by-track)
                                 (--map (exercism--download-exercise it track-slug) exercises)))))
 
-(defun exercism--submit (implementation-file-paths)
-  "Submit your solution in IMPLEMENTATION-FILE-PATHS."
+(defun exercism--submit (implementation-file-paths &optional open-in-browser-after?)
+  "Submit your solution in IMPLEMENTATION-FILE-PATHS.
+If OPEN-IN-BROWSER-AFTER? is non-nil, the browser's opened for
+you to complete your solution."
   (setq exercism--implementation-file-paths implementation-file-paths)
   (async-start
    `(lambda ()
@@ -104,12 +106,27 @@ ON-SUCCESS is a fn that gets called with the exercise slugs."
       (shell-command-to-string
        (format "%s submit %s" exercism-executable exercism--implementation-file-paths)))
    (lambda (result)
-     (message "[exercism] submit: %s" result))))
+     (message "[exercism] submit: %s" result)
+     ;; Result looks something like:
+     ;; Your solution has been submitted successfully.
+     ;; View it at:
+     ;;
+     ;;
+     ;; https://exercism.org/tracks/javascript/exercises/hello-world
+     (when open-in-browser-after?
+       (when (string-match "\\(https://exercism\\.org.*\\)" result)
+         (browse-url (match-string 1 result)))
+       (message "[exercism] submit: %s" result)))))
 
 (defun exercism-submit ()
   "Submit your implementation."
   (interactive)
   (exercism--submit (buffer-file-name)))
+
+(defun exercism-submit-then-open-in-browser ()
+  "Submit your implementation then open the submission page in your browser."
+  (interactive)
+  (exercism--submit (buffer-file-name) t))
 
 (defun exercism-set-track ()
   "Set the current track that you intend to do exercises for."
@@ -135,6 +152,12 @@ ON-SUCCESS is a fn that gets called with the exercise slugs."
    ("d" "Download exercises" exercism-download)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
-   ("s" "Submit current file/directory as implementation" exercism-submit)])
+   ("s" "Submit" exercism-submit)
+   ;; TODO Use a transient flag instead of a separate prefix
+   ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
+
+;; TODO Command to update CLI
+;; TODO Auto-run tests before submitting
+;; TODO List the count of downloaded exercises
 
 (provide 'exercism)
