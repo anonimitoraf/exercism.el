@@ -140,7 +140,7 @@ you to complete your solution."
   (unless exercism--current-track (exercism-set-track))
   (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
          (track-exercises (await (exercism--list-exercises exercism--current-track t)))
-         (exercise (completing-read (format "Choose %s exercise: " exercism--current-track)
+         (exercise (completing-read (format "Choose an exercise (%s): " exercism--current-track)
                                     track-exercises (cl-constantly t) t))
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
