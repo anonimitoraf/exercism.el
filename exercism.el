@@ -34,7 +34,9 @@
 
 (defmacro exercism--debug (form)
   "Print out FORM and the evaluation result."
-  `(message (concat (prin1-to-string ',form) " => %s") ,form))
+  `(let ((result ,form))
+     (message (concat (prin1-to-string ',form) " => %s") result)
+     result))
 
 (defun exercism--run-shell-command (shell-cmd &optional callback)
   "Run SHELL-CMD asynchronously, calling CALLBACK if defined.
