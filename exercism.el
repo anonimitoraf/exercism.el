@@ -189,6 +189,7 @@ the hello world exercise."
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
 
 ;; TODO Command to update CLI
-;; TODO Add exercise blurb (maybe via marginalia?)
+;; TODO Order exercises by suggested order of completion
+;; TODO Show each exercise's difficulty and blurb (maybe via marginalia?)
 
 (provide 'exercism)
