@@ -4,6 +4,7 @@
 (require 'a)
 (require 'request)
 (require 'async)
+(require 'async-await)
 (require 'persist)
 (require 'transient)
 
@@ -61,8 +62,9 @@ Otherwise, just echoes the output."
   (interactive)
   (exercism--configure (read-string "API token: ")))
 
-(defun exercism--download-exercise (exercise-slug track-slug)
-  "Download the exercise locally as specified via EXERCISE-SLUG and TRACK-SLUG."
+(defun exercism--download-exercise (exercise-slug track-slug &optional on-finish)
+  "Download the exercise locally as specified via EXERCISE-SLUG and TRACK-SLUG.
+ON-FINISH is called on completion."
   (setq exercism--exercise-slug exercise-slug
         exercism--track-slug track-slug)
   (exercism--run-shell-command (concat exercism-executable
@@ -70,30 +72,29 @@ Otherwise, just echoes the output."
                                        " --exercise=" exercism--exercise-slug
                                        " --track=" exercism--track-slug)
                                (lambda (result)
-                                 (message "[exercism] download exercise: %s" result))))
+                                 (message "[exercism] download exercise: %s" result)
+                                 (funcall on-finish result))))
 
-(defun exercism--list-exercises (track-slug on-success)
+(defun exercism--list-exercises (track-slug &optional only-unlocked?)
   "List all exercises given TRACK-SLUG.
-ON-SUCCESS is a fn that gets called with the exercise slugs."
-  (request
-    (concat "https://exercism.org/api/v2/tracks/" track-slug "/exercises")
-    :parser 'json-read
-    :success (cl-function
-              (lambda (&key data &allow-other-keys)
-                (let* ((exercises (a-get data 'exercises))
-                       (exercise-slugs (--map (a-get it 'slug) exercises)))
-                  (funcall on-success exercise-slugs))))))
-
-(defun exercism-download ()
-  "Download all the exercises of a track."
-  (interactive)
-  (let ((track-slug (read-string "Track slug: ")))
-    (exercism--list-exercises track-slug
-                              (lambda (exercises)
-                                (setq exercism--exercises-by-track
-                                      (a-assoc exercism--exercises-by-track track-slug exercises))
-                                (persist-save 'exercism--exercises-by-track)
-                                (--map (exercism--download-exercise it track-slug) exercises)))))
+If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
+  (promise-new
+   (lambda (resolve _)
+     (request
+       (concat "https://exercism.org/api/v2/tracks/" track-slug "/exercises")
+       :parser 'json-read
+       :success (cl-function
+                 (lambda (&key data &allow-other-keys)
+                   (let* ((exercises (a-get data 'exercises))
+                          (exercise-slugs (->> (cl-map #'list #'identity exercises)
+                                               ;; TODO Find out how to use web session so we
+                                               ;; can correctly filter out only unlocked exercises.
+                                               ;; Currently, all exercises are "unlocked"
+                                               (-filter (lambda (it)
+                                                          (if (not only-unlocked?) t
+                                                            (a-get it 'is_unlocked))))
+                                               (-map (lambda (it) (a-get it 'slug))))))
+                     (funcall resolve exercise-slugs))))))))
 
 (defun exercism--submit (implementation-file-paths &optional open-in-browser-after?)
   "Submit your solution in IMPLEMENTATION-FILE-PATHS.
@@ -131,28 +132,38 @@ you to complete your solution."
          (track (completing-read "Choose track: " tracks (cl-constantly t) t)))
     (setq exercism--current-track track)))
 
-(defun exercism-open-exercise ()
+(async-defun exercism-open-exercise ()
   "Open an exercise from the currently selected track."
   (interactive)
   (unless exercism--current-track (exercism-set-track))
-  (let* ((dir (expand-file-name exercism--current-track exercism-directory))
-         (exercises (directory-files dir nil "\\w+"))
+  (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
+         (track-exercises (await (exercism--list-exercises exercism--current-track t)))
          (exercise (completing-read (format "Choose %s exercise: " exercism--current-track)
-                                    exercises (cl-constantly t) t)))
-    (find-file (expand-file-name exercise dir))))
+                                    track-exercises (cl-constantly t) t))
+         (exercise-dir (expand-file-name exercise track-dir)))
+    (if (file-exists-p exercise-dir)
+        (find-file exercise-dir)
+      (progn
+        (message "[exercism] downloading %s exercise %s... (please wait)" exercism--current-track exercise)
+        (exercism--download-exercise exercise exercism--current-track
+                                     ;; TODO Maybe don't assume that the exercise dir path
+                                     ;; will be the same. Instead retrieve it from the
+                                     ;; download response?
+                                     (lambda (result)
+                                       (message "[exercism] download result: %s" result)
+                                       (when (file-exists-p exercise-dir)
+                                         (find-file exercise-dir))))))))
 
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
   ["Exercism actions"
    ("c" "Configure" exercism-configure)
-   ("d" "Download exercises" exercism-download)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
    ("s" "Submit" exercism-submit)
    ;; TODO Use a transient flag instead of a separate prefix
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
 
-;; TODO Do not download all exercises at once. Do it on-demand!
 ;; TODO Command to update CLI
 
 (provide 'exercism)
