@@ -7,21 +7,11 @@
 (require 'persist)
 (require 'transient)
 
-(defun exercism--run-shell-command (shell-cmd &optional callback)
-  "Run SHELL-CMD asynchronously, calling CALLBACK if defined.
-Otherwise, just echoes the output."
-  (async-start
-   `(lambda ()
-      ,(async-inject-variables "exercism.*")
-      (shell-command-to-string shell-cmd))
-   (lambda (result)
-     (if callback (funcall callback result)
-       (message "[exercism shell cmd]: %s" result)))))
-
 (defvar exercism--api-token)
 (defvar exercism--exercise-slug)
 (defvar exercism--track-slug)
 (defvar exercism--implementation-file-paths)
+(defvar exercism--shell-cmd)
 
 (persist-defvar
  exercism--exercises-by-track (a-list)
@@ -40,6 +30,23 @@ Otherwise, just echoes the output."
   "File path containing downloaded Exercism files."
   :type 'string
   :group 'exercism)
+
+(defmacro exercism--debug (form)
+  "Print out FORM and the evaluation result."
+  `(message (concat (prin1-to-string ',form) " => %s") ,form))
+
+(defun exercism--run-shell-command (shell-cmd &optional callback)
+  "Run SHELL-CMD asynchronously, calling CALLBACK if defined.
+Otherwise, just echoes the output."
+  (setq exercism--shell-cmd shell-cmd)
+  (async-start
+   `(lambda ()
+      ,(async-inject-variables "exercism.*")
+      (shell-command-to-string exercism--shell-cmd))
+   (lambda (result)
+     (message "shell cmd result")
+     (if callback (funcall callback result)
+       (message "[exercism shell cmd]: %s" result)))))
 
 (defun exercism--configure (api-token)
   "Configure excerism with API-TOKEN."
