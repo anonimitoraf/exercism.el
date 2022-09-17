@@ -154,7 +154,8 @@ the hello world exercise."
          (track (completing-read "Choose track: " tracks (cl-constantly t) t))
          (track-dir (expand-file-name track exercism-directory)))
     (unless (file-exists-p track-dir) (exercism--track-init track))
-    (setq exercism--current-track track)))
+    (setq exercism--current-track track)
+    (message "[exercism] set current track to: %s" track)))
 
 (async-defun exercism-open-exercise ()
   "Open an exercise from the currently selected track."
