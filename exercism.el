@@ -47,7 +47,6 @@ Otherwise, just echoes the output."
       ,(async-inject-variables "exercism.*")
       (shell-command-to-string exercism--shell-cmd))
    (lambda (result)
-     (message "shell cmd result")
      (if callback (funcall callback result)
        (message "[exercism shell cmd]: %s" result)))))
 
