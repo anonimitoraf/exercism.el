@@ -44,13 +44,10 @@ Otherwise, just echoes the output."
 (defun exercism--configure (api-token)
   "Configure excerism with API-TOKEN."
   (setq exercism--api-token api-token)
-  (async-start
-   `(lambda ()
-      ,(async-inject-variables "exercism.*")
-      (shell-command-to-string (concat exercism-executable
+  (exercism--run-shell-command (concat exercism-executable
                                        " configure"
-                                       " --token " exercism--api-token)))
-   (lambda (result) (message "[exercism] configure: %s" result))))
+                                       " --token " exercism--api-token)
+                               (lambda (result) (message "[exercism] configure: %s" result))))
 
 (defun exercism-configure ()
   "Configure exercism."
@@ -61,16 +58,12 @@ Otherwise, just echoes the output."
   "Download the exercise locally as specified via EXERCISE-SLUG and TRACK-SLUG."
   (setq exercism--exercise-slug exercise-slug
         exercism--track-slug track-slug)
-  (async-start
-   `(lambda ()
-      ,(async-inject-variables "exercism.*")
-      (shell-command-to-string
-       (concat exercism-executable
-               " download"
-               " --exercise=" exercism--exercise-slug
-               " --track=" exercism--track-slug) ))
-   (lambda (result)
-     (message "[exercism] download exercise: %s" result))))
+  (exercism--run-shell-command (concat exercism-executable
+                                       " download"
+                                       " --exercise=" exercism--exercise-slug
+                                       " --track=" exercism--track-slug)
+                               (lambda (result)
+                                 (message "[exercism] download exercise: %s" result))))
 
 (defun exercism--list-exercises (track-slug on-success)
   "List all exercises given TRACK-SLUG.
@@ -100,23 +93,19 @@ ON-SUCCESS is a fn that gets called with the exercise slugs."
 If OPEN-IN-BROWSER-AFTER? is non-nil, the browser's opened for
 you to complete your solution."
   (setq exercism--implementation-file-paths implementation-file-paths)
-  (async-start
-   `(lambda ()
-      ,(async-inject-variables "exercism.*")
-      (shell-command-to-string
-       (format "%s submit %s" exercism-executable exercism--implementation-file-paths)))
-   (lambda (result)
-     (message "[exercism] submit: %s" result)
-     ;; Result looks something like:
-     ;; Your solution has been submitted successfully.
-     ;; View it at:
-     ;;
-     ;;
-     ;; https://exercism.org/tracks/javascript/exercises/hello-world
-     (when open-in-browser-after?
-       (when (string-match "\\(https://exercism\\.org.*\\)" result)
-         (browse-url (match-string 1 result)))
-       (message "[exercism] submit: %s" result)))))
+  (exercism--run-shell-command (format "%s submit %s" exercism-executable exercism--implementation-file-paths)
+                               (lambda (result)
+                                 (message "[exercism] submit: %s" result)
+                                 ;; Result looks something like:
+                                 ;; Your solution has been submitted successfully.
+                                 ;; View it at:
+                                 ;;
+                                 ;;
+                                 ;; https://exercism.org/tracks/javascript/exercises/hello-world
+                                 (when open-in-browser-after?
+                                   (when (string-match "\\(https://exercism\\.org.*\\)" result)
+                                     (browse-url (match-string 1 result)))
+                                   (message "[exercism] submit: %s" result)))))
 
 (defun exercism-submit ()
   "Submit your implementation."
@@ -132,7 +121,7 @@ you to complete your solution."
   "Set the current track that you intend to do exercises for."
   (interactive)
   (let* ((tracks (directory-files exercism-directory nil "\\w+"))
-        (track (completing-read "Choose track: " tracks (cl-constantly t) t)))
+         (track (completing-read "Choose track: " tracks (cl-constantly t) t)))
     (setq exercism--current-track track)))
 
 (defun exercism-open-exercise ()
