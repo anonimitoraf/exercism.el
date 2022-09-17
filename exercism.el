@@ -63,18 +63,32 @@ Otherwise, just echoes the output."
   (interactive)
   (exercism--configure (read-string "API token: ")))
 
-(defun exercism--download-exercise (exercise-slug track-slug &optional on-finish)
-  "Download the exercise locally as specified via EXERCISE-SLUG and TRACK-SLUG.
-ON-FINISH is called on completion."
-  (setq exercism--exercise-slug exercise-slug
-        exercism--track-slug track-slug)
-  (exercism--run-shell-command (concat exercism-executable
-                                       " download"
-                                       " --exercise=" exercism--exercise-slug
-                                       " --track=" exercism--track-slug)
-                               (lambda (result)
-                                 (message "[exercism] download exercise: %s" result)
-                                 (funcall on-finish result))))
+(defun exercism--download-exercise (exercise-slug track-slug)
+  "Download the exercise locally as specified via EXERCISE-SLUG and TRACK-SLUG."
+  (promise-new
+   (lambda (resolve _)
+     (setq exercism--exercise-slug exercise-slug
+           exercism--track-slug track-slug)
+     (exercism--run-shell-command (concat exercism-executable
+                                          " download"
+                                          " --exercise=" exercism--exercise-slug
+                                          " --track=" exercism--track-slug)
+                                  (lambda (result)
+                                    (message "[exercism] download exercise: %s" result)
+                                    (funcall resolve result))))))
+
+(defun exercism--list-tracks ()
+  "List all the tracks."
+  (promise-new
+   (lambda (resolve _)
+     (request
+       (concat "https://exercism.org/api/v2/tracks")
+       :parser 'json-read
+       :success (cl-function
+                 (lambda (&key data &allow-other-keys)
+                   (let* ((tracks (a-get data 'tracks))
+                          (track-slugs (-map (lambda (it) (a-get it 'slug)) tracks)))
+                     (funcall resolve track-slugs))))))))
 
 (defun exercism--list-exercises (track-slug &optional only-unlocked?)
   "List all exercises given TRACK-SLUG.
@@ -126,11 +140,20 @@ you to complete your solution."
   (interactive)
   (exercism--submit (buffer-file-name) t))
 
-(defun exercism-set-track ()
+(async-defun exercism--track-init (track-slug)
+  "Init a track (identified via TRACK-SLUG) by attempting to download
+the hello world exercise."
+  (let ((result (await (exercism--download-exercise "hello-world" track-slug))))
+    (when (string-match "^Error:.*" result)
+      (user-error result))))
+
+(async-defun exercism-set-track ()
   "Set the current track that you intend to do exercises for."
   (interactive)
-  (let* ((tracks (directory-files exercism-directory nil "\\w+"))
-         (track (completing-read "Choose track: " tracks (cl-constantly t) t)))
+  (let* ((tracks (await (exercism--list-tracks)))
+         (track (completing-read "Choose track: " tracks (cl-constantly t) t))
+         (track-dir (expand-file-name track exercism-directory)))
+    (unless (file-exists-p track-dir) (exercism--track-init track))
     (setq exercism--current-track track)))
 
 (async-defun exercism-open-exercise ()
@@ -146,14 +169,13 @@ you to complete your solution."
         (find-file exercise-dir)
       (progn
         (message "[exercism] downloading %s exercise %s... (please wait)" exercism--current-track exercise)
-        (exercism--download-exercise exercise exercism--current-track
-                                     ;; TODO Maybe don't assume that the exercise dir path
-                                     ;; will be the same. Instead retrieve it from the
-                                     ;; download response?
-                                     (lambda (result)
-                                       (message "[exercism] download result: %s" result)
-                                       (when (file-exists-p exercise-dir)
-                                         (find-file exercise-dir))))))))
+        (let ((result (await (exercism--download-exercise exercise exercism--current-track))))
+          (message "[exercism] download result: %s" result)
+          ;; TODO Maybe don't assume that the exercise dir path
+          ;; will be the same. Instead retrieve it from the
+          ;; download response?
+          (when (file-exists-p exercise-dir)
+            (find-file exercise-dir)))))))
 
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
@@ -166,5 +188,6 @@ you to complete your solution."
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
 
 ;; TODO Command to update CLI
+;; TODO Add exercise blurb (maybe via marginalia?)
 
 (provide 'exercism)
