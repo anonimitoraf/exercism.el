@@ -1,4 +1,23 @@
-;; -*- lexical-binding: t -*-
+;;; exercism.el --- (Unofficial) Emacs integration for https://exercism.org  -*- lexical-binding: t; -*-
+;;
+;; Copyright (C) 2022 Rafael Nicdao
+;;
+;; Author: Rafael Nicdao <https://github.com/anonimito>
+;; Maintainer: Rafael Nicdao <nicdaoraf@gmail.com>
+;; Created: September 15, 2022
+;; Version: 0.0.0
+;; Keywords: exercism, convenience
+;; Homepage: https://github.com/anonimitoraf/exercism.el
+;; Package-Requires: ((emacs "25") (dash "2.19.1") (a "1.0.0") (request "0.3.2") (async "1.9.6") (async-await "1.1") (persist "0.5") (transient "0.3.7"))
+;;
+;; This file is not part of GNU Emacs.
+;;
+;;; Commentary:
+;;
+;;  (Unofficial) Emacs integration for https://exercism.org.
+;;  Provides slightly more features then the CLI for a more streamlined experience.
+;;
+;;; Code:
 
 (require 'dash)
 (require 'a)
