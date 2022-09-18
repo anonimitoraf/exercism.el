@@ -189,15 +189,14 @@ This is done by downloading the hello-world exercise."
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
         (find-file exercise-dir)
-      (progn
-        (message "[exercism] downloading %s exercise %s... (please wait)" exercism--current-track exercise)
-        (let ((result (await (exercism--download-exercise exercise exercism--current-track))))
-          (message "[exercism] download result: %s" result)
-          ;; TODO Maybe don't assume that the exercise dir path
-          ;; will be the same. Instead retrieve it from the
-          ;; download response?
-          (when (file-exists-p exercise-dir)
-            (find-file exercise-dir)))))))
+      (message "[exercism] downloading %s exercise %s... (please wait)" exercism--current-track exercise)
+      (let ((result (await (exercism--download-exercise exercise exercism--current-track))))
+        (message "[exercism] download result: %s" result)
+        ;; TODO Maybe don't assume that the exercise dir path
+        ;; will be the same. Instead retrieve it from the
+        ;; download response?
+        (when (file-exists-p exercise-dir)
+          (find-file exercise-dir))))))
 
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
