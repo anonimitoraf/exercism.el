@@ -102,7 +102,7 @@ Otherwise, just echoes the output."
    (lambda (resolve _)
      (request
        (concat "https://exercism.org/api/v2/tracks")
-       :parser 'json-read
+       :parser #'json-read
        :success (cl-function
                  (lambda (&key data &allow-other-keys)
                    (let* ((tracks (a-get data 'tracks))
@@ -116,7 +116,7 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
    (lambda (resolve _)
      (request
        (concat "https://exercism.org/api/v2/tracks/" track-slug "/exercises")
-       :parser 'json-read
+       :parser #'json-read
        :success (cl-function
                  (lambda (&key data &allow-other-keys)
                    (let* ((exercises (a-get data 'exercises))
