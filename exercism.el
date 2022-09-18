@@ -1,4 +1,4 @@
-;;; exercism.el --- (Unofficial) Emacs integration for https://exercism.org  -*- lexical-binding: t; -*-
+;;; exercism.el --- Emacs (unofficial) integration for https://exercism.org  -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2022 Rafael Nicdao
 ;;
@@ -213,3 +213,4 @@ the hello world exercise."
 ;; TODO Show each exercise's difficulty and blurb (maybe via marginalia?)
 
 (provide 'exercism)
+;;; exercism.el ends here
