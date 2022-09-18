@@ -1,10 +1,10 @@
-#+title: exercism.el
 * Preamble
-[[https://exercism.org][Exercism ]] is a great tool for learning new languages or diving deeper into familiar ones!
+[https://exercism.org](Exercism) is a great tool for learning new languages or diving deeper into familiar ones!
 
 It offers not just a nice web editor but also a CLI if you want to use your local editor of choice. This package aims to streamline the latter, via Emacs!
 * Quick Start
-- Invoke the command =exercism=. It will popup a [[https://github.com/magit/transient][transient]] menu (similar to our beloved =magit=!)
+- Invoke the command `exercism`. It will popup a [[https://github.com/magit/transient][transient]] menu (similar to our beloved =magit=!)
+
 - =Configure= - (once off) [[https://exercism.org/settings/api_cli][Get your API token]] and pop it into the prompt
 - =Set current track= - Choose the track that you want to do exercises for.
   - This might take a few minutes the first time because it "initializes" the track locally. Subsequent invocations will be instant.
