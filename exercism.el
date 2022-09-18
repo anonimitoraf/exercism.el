@@ -35,7 +35,7 @@
 
 (persist-defvar
  exercism--exercises-by-track (a-list)
- "An a-list of exercises grouped by track by suggested order of completion.")
+ "An `a-list' of exercises grouped by track by suggested order of completion.")
 
 (persist-defvar exercism--current-track nil "Current track.")
 
@@ -160,8 +160,8 @@ you to complete your solution."
   (exercism--submit (buffer-file-name) t))
 
 (async-defun exercism--track-init (track-slug)
-  "Init a track (identified via TRACK-SLUG) by attempting to download
-the hello world exercise."
+  "Init a track (via TRACK-SLUG).
+This is done by downloading the hello-world exercise."
   (message "[exercism] initializing %s... (please wait)" track-slug)
   (let ((result (await (exercism--download-exercise "hello-world" track-slug))))
     (when (string-match "^Error:.*" result)
