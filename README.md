@@ -5,9 +5,9 @@ It offers not just a nice web editor but also a CLI if you want to use your loca
 
 # Quick Start
 - Invoke the command `exercism`. It will popup a [transient](https://github.com/magit/transient) menu (similar to our beloved `magit`!)
+<img src="./demos/menu.png" width=300 />
 
 - `Configure` - (once off) [Get your API token](https://exercism.org/settings/api_cli) and pop it into the prompt
-<img src="./demos/menu.png" width=200 />
 
 - `Set current track` - Choose the track that you want to do exercises for.
   - This might take a few minutes the first time because it "initializes" the track locally. Subsequent invocations will be instant.
