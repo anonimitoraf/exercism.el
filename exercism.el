@@ -184,7 +184,7 @@ This is done by downloading the hello-world exercise."
   (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
          (track-exercises (await (exercism--list-exercises exercism--current-track t)))
          (exercise (completing-read (format "Choose an exercise (%s): " exercism--current-track)
-                                    track-exercises (cl-constantly t) t))
+                                    track-exercises (-const t) t))
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
         (find-file exercise-dir)
