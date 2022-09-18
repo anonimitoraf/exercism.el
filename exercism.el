@@ -4,6 +4,7 @@
 ;;
 ;; Author: Rafael Nicdao <https://github.com/anonimito>
 ;; Maintainer: Rafael Nicdao <nicdaoraf@gmail.com>
+;; SPDX-License-Identifier: GPL-3.0-or-later
 ;; Created: September 15, 2022
 ;; Version: 0.0.0
 ;; Keywords: exercism, convenience
