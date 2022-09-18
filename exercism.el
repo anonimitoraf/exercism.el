@@ -8,7 +8,7 @@
 ;; Version: 0.0.0
 ;; Keywords: exercism, convenience
 ;; Homepage: https://github.com/anonimitoraf/exercism.el
-;; Package-Requires: ((emacs "25") (dash "2.19.1") (a "1.0.0") (request "0.3.2") (async "1.9.6") (async-await "1.1") (persist "0.5") (transient "0.3.7"))
+;; Package-Requires: ((emacs "27.1") (dash "2.19.1") (a "1.0.0") (request "0.3.2") (async "1.9.6") (async-await "1.1") (persist "0.5") (transient "0.3.7"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
