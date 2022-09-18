@@ -19,7 +19,6 @@
 ;;
 ;;; Code:
 
-(require 'cl-lib)
 (require 'dash)
 (require 'a)
 (require 'request)
@@ -172,7 +171,7 @@ This is done by downloading the hello-world exercise."
   "Set the current track that you intend to do exercises for."
   (interactive)
   (let* ((tracks (await (exercism--list-tracks)))
-         (track (completing-read "Choose track: " tracks (cl-constantly t) t))
+         (track (completing-read "Choose track: " tracks (-const t) t))
          (track-dir (expand-file-name track exercism-directory)))
     (unless (file-exists-p track-dir) (await (exercism--track-init track)))
     (setq exercism--current-track track)
