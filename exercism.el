@@ -46,8 +46,9 @@
   :group 'exercism)
 
 (defcustom exercism-directory
-  (cond ((eq system-type 'darwin) "~/Exercism")
-        (t "~/exercism"))
+  (expand-file-name
+   (cond ((eq system-type 'darwin) "~/Exercism")
+         (t "~/exercism")))
   "File path containing downloaded Exercism files."
   :type 'string
   :group 'exercism)
