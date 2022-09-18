@@ -153,7 +153,7 @@ the hello world exercise."
   (let* ((tracks (await (exercism--list-tracks)))
          (track (completing-read "Choose track: " tracks (cl-constantly t) t))
          (track-dir (expand-file-name track exercism-directory)))
-    (unless (file-exists-p track-dir) (exercism--track-init track))
+    (unless (file-exists-p track-dir) (await (exercism--track-init track)))
     (setq exercism--current-track track)
     (message "[exercism] set current track to: %s" track)))
 
