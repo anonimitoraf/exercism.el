@@ -19,6 +19,7 @@
 ;;
 ;;; Code:
 
+(require 'cl-lib)
 (require 'dash)
 (require 'a)
 (require 'request)
