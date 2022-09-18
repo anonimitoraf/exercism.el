@@ -3,6 +3,9 @@
 
 It offers not just a nice web editor but also a CLI if you want to use your local editor of choice. This package aims to streamline the latter, via Emacs!
 
+# Prerequisites
+Download the `exercism` CLI by following [the official guide](https://exercism.org/cli-walkthrough).
+
 # Quick Start
 - Invoke the command `exercism`. It will popup a [transient](https://github.com/magit/transient) menu (similar to our beloved `magit`!)
 <img src="./demos/menu.png" width=300 />
