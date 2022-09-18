@@ -143,6 +143,7 @@ you to complete your solution."
 (async-defun exercism--track-init (track-slug)
   "Init a track (identified via TRACK-SLUG) by attempting to download
 the hello world exercise."
+  (message "[exercism] initializing %s... (please wait)" track-slug)
   (let ((result (await (exercism--download-exercise "hello-world" track-slug))))
     (when (string-match "^Error:.*" result)
       (user-error result))))
