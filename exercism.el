@@ -74,9 +74,9 @@ Otherwise, just echoes the output."
 (defun exercism--configure (api-token)
   "Configure excerism with API-TOKEN."
   (setq exercism--api-token api-token)
-  (exercism--run-shell-command (concat exercism-executable
+  (exercism--run-shell-command (concat (shell-quote-argument exercism-executable)
                                        " configure"
-                                       " --token " exercism--api-token)
+                                       " --token " (shell-quote-argument exercism--api-token))
                                (lambda (result) (message "[exercism] configure: %s" result))))
 
 (defun exercism-configure ()
@@ -90,10 +90,10 @@ Otherwise, just echoes the output."
    (lambda (resolve _)
      (setq exercism--exercise-slug exercise-slug
            exercism--track-slug track-slug)
-     (exercism--run-shell-command (concat exercism-executable
+     (exercism--run-shell-command (concat (shell-quote-argument exercism-executable)
                                           " download"
-                                          " --exercise=" exercism--exercise-slug
-                                          " --track=" exercism--track-slug)
+                                          " --exercise=" (shell-quote-argument exercism--exercise-slug)
+                                          " --track=" (shell-quote-argument exercism--track-slug))
                                   (lambda (result)
                                     (message "[exercism] download exercise: %s" result)
                                     (funcall resolve result))))))
@@ -137,7 +137,9 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
 If OPEN-IN-BROWSER-AFTER? is non-nil, the browser's opened for
 you to complete your solution."
   (setq exercism--implementation-file-paths implementation-file-paths)
-  (exercism--run-shell-command (format "%s submit %s" exercism-executable exercism--implementation-file-paths)
+  (exercism--run-shell-command (format "%s submit %s"
+                                       (shell-quote-argument exercism-executable)
+                                       (shell-quote-argument exercism--implementation-file-paths))
                                (lambda (result)
                                  (message "[exercism] submit: %s" result)
                                  ;; Result looks something like:
