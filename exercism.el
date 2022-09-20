@@ -9,7 +9,7 @@
 ;; Version: 0.0.0
 ;; Keywords: exercism, convenience
 ;; Homepage: https://github.com/anonimitoraf/exercism.el
-;; Package-Requires: ((emacs "27.1") (dash "2.19.1") (a "1.0.0") (request "0.3.2") (async "1.9.6") (async-await "1.1") (persist "0.5") (transient "0.3.7"))
+;; Package-Requires: ((emacs "27.1") (dash "2.19.1") (a "1.0.0") (s "1.13.1") (request "0.3.2") (async "1.9.6") (async-await "1.1") (persist "0.5") (transient "0.3.7"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -22,6 +22,7 @@
 
 (require 'dash)
 (require 'a)
+(require 's)
 (require 'request)
 (require 'async)
 (require 'async-await)
@@ -180,13 +181,35 @@ This is done by downloading the hello-world exercise."
     (setq exercism--current-track track)
     (message "[exercism] set current track to: %s" track)))
 
+(defvar exercism--longest-exercise-slug-length)
+(defvar exercism--longest-exercise-difficulty-length)
+(defun exercism--exercises->longest (exercises property)
+  "Return the longest PROPERTY length from list of EXERCISES."
+  (->> exercises
+       (--map (a-get it property))
+       (--max-by (> (length it) (length other)))
+       (length)))
+
+(defun exercism--color-string (str color)
+  "Make a string STR with fg COLOR. Return STR."
+  (add-face-text-property 0 (length str) (list :foreground color) nil str)
+  str)
+
 (defun exercism--exercise-annotation-fn (exercise)
   "Annotates each EXERCISE option with the difficulty and description.
 EXERCISE should be a list with the shape `(slug exercise-data)'."
   (let* ((option (assoc exercise minibuffer-completion-table))
-         (data (cadr option)))
-    (when option (concat " " (format "(%s)" (a-get data 'difficulty))
-                         " " (a-get data 'blurb)))))
+         (data (cadr option))
+         (blurb (a-get data 'blurb))
+         (difficulty (a-get data 'difficulty)))
+    ;; TODO Make annotation colors customizable via faces
+    (concat " " (exercism--color-string (s-pad-right exercism--longest-exercise-difficulty-length " " difficulty)
+                                          (cond
+                                           ((equal difficulty "easy") "green")
+                                           ((equal difficulty "medium") "yellow")
+                                           ((equal difficulty "hard") "red")
+                                           (t "blue")))
+            "    " (exercism--color-string blurb "grey50"))))
 
 (async-defun exercism-open-exercise ()
   "Open an exercise from the currently selected track."
@@ -194,11 +217,14 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
   (unless exercism--current-track (exercism-set-track))
   (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
          (track-exercises (await (exercism--list-exercises exercism--current-track t)))
-         (exercise-options (-map (lambda (it) (list (a-get it 'slug) it))
+         (_ (setq exercism--longest-exercise-slug-length (exercism--exercises->longest track-exercises 'slug)
+                  exercism--longest-exercise-difficulty-length (exercism--exercises->longest track-exercises 'difficulty)))
+         (exercise-options (-map (lambda (exercise)
+                                   (list (s-pad-right exercism--longest-exercise-slug-length " " (a-get exercise 'slug)) exercise))
                                  track-exercises))
          (completion-extra-properties '(:annotation-function exercism--exercise-annotation-fn))
-         (exercise (completing-read (format "Choose an exercise (%s): " exercism--current-track)
-                                    exercise-options (-const t) t))
+         (exercise (s-trim (completing-read (format "Choose an exercise (%s): " exercism--current-track)
+                                     exercise-options (-const t) t)))
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
         (find-file exercise-dir)
@@ -223,7 +249,6 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
 
 ;; TODO Command to update CLI
 ;; TODO Order exercises by suggested order of completion
-;; TODO Show each exercise's difficulty and blurb (maybe via marginalia?)
 
 (provide 'exercism)
 ;;; exercism.el ends here
