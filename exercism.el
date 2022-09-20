@@ -35,10 +35,6 @@
 (defvar exercism--implementation-file-paths)
 (defvar exercism--shell-cmd)
 
-(persist-defvar
- exercism--exercises-by-track (a-list)
- "An `a-list' of exercises grouped by track by suggested order of completion.")
-
 (persist-defvar exercism--current-track nil "Current track.")
 
 (defcustom exercism-executable "exercism"
