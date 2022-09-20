@@ -128,8 +128,7 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
                                                ;; Currently, all exercises are "unlocked"
                                                (-filter (lambda (it)
                                                           (if (not only-unlocked?) t
-                                                            (a-get it 'is_unlocked))))
-                                               (-map (lambda (it) (a-get it 'slug))))))
+                                                            (a-get it 'is_unlocked)))))))
                      (funcall resolve exercise-slugs))))))))
 
 (defun exercism--submit (implementation-file-paths &optional open-in-browser-after?)
@@ -181,14 +180,25 @@ This is done by downloading the hello-world exercise."
     (setq exercism--current-track track)
     (message "[exercism] set current track to: %s" track)))
 
+(defun exercism--exercise-annotation-fn (exercise)
+  "Annotates each EXERCISE option with the difficulty and description.
+EXERCISE should be a list with the shape `(slug exercise-data)'."
+  (let* ((option (assoc exercise minibuffer-completion-table))
+         (data (cadr option)))
+    (when option (concat " " (format "(%s)" (a-get data 'difficulty))
+                         " " (a-get data 'blurb)))))
+
 (async-defun exercism-open-exercise ()
   "Open an exercise from the currently selected track."
   (interactive)
   (unless exercism--current-track (exercism-set-track))
   (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
          (track-exercises (await (exercism--list-exercises exercism--current-track t)))
+         (exercise-options (-map (lambda (it) (list (a-get it 'slug) it))
+                                 track-exercises))
+         (completion-extra-properties '(:annotation-function exercism--exercise-annotation-fn))
          (exercise (completing-read (format "Choose an exercise (%s): " exercism--current-track)
-                                    track-exercises (-const t) t))
+                                    exercise-options (-const t) t))
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
         (find-file exercise-dir)
