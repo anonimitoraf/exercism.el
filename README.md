@@ -24,7 +24,7 @@ https://user-images.githubusercontent.com/15933322/190892892-02f53f4c-07f8-4d85-
 ## `Open an exercise`
 Time to get into it! Note that some exercises may still be unlocked, yet "select-able" (see the "Known Limitations" section).
 
-https://user-images.githubusercontent.com/15933322/190892950-7da7a4fb-83a0-4b54-b6dc-ca0e3fff46c3.mp4
+<img src="./demos/open-exercise.png" width=700 />
 
 ## `Submit`
 Submits the current directory as a solution. Note that to mark the exercise as "completed", you'll have to do it via the web app.
