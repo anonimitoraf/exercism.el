@@ -1,4 +1,4 @@
-;;; exercism.el --- Emacs (unofficial) integration for https://exercism.org  -*- lexical-binding: t; -*-
+;;; exercism.el --- Unofficial https://exercism.org integration -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2022 Rafael Nicdao
 ;;
@@ -15,7 +15,7 @@
 ;;
 ;;; Commentary:
 ;;
-;;  (Unofficial) Emacs integration for https://exercism.org.
+;;  Unofficial https://exercism.org integration
 ;;  Provides slightly more features then the CLI for a more streamlined experience.
 ;;
 ;;; Code:
