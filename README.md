@@ -1,3 +1,5 @@
+[![MELPA](https://melpa.org/packages/exercism-badge.svg)](https://melpa.org/#/exercism)
+
 # Preamble
 [Exercism](https://exercism.org) is a great tool for learning new languages or diving deeper into familiar ones!
 
