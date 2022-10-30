@@ -9,6 +9,8 @@ It offers not just a nice web editor but also a CLI if you want to use your loca
 Download the `exercism` CLI by following [the official guide](https://exercism.org/cli-walkthrough).
 
 # Quick Start
+- Install - it's available on Melpa!
+- Load `exercism` via `(require 'exercism)` or `(use-package exercism)` or equivalent
 - Invoke the command `exercism`. It will popup a [transient](https://github.com/magit/transient) menu (similar to our beloved `magit`!)
 <img src="./demos/menu.png" width=300 />
 
