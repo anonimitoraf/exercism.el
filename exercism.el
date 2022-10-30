@@ -234,7 +234,7 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
 
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
-  ["Exercism actions"
+  [,(format "Exercism actions (current track: %s)" (or exercism--current-track "N/A"))
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
