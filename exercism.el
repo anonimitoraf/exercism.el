@@ -35,6 +35,7 @@
 (defvar exercism--shell-cmd)
 
 (persist-defvar exercism--current-track nil "Current track.")
+(persist-defvar exercism--transient-name "Exercism (no track selected yet)" "Title for transient")
 
 (defcustom exercism-executable "exercism"
   "Executable name/location."
@@ -232,9 +233,13 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
         (when (file-exists-p exercise-dir)
           (find-file exercise-dir))))))
 
+(add-variable-watcher 'exercism--current-track
+                      (lambda (_ newval _ _)
+                        (setq exercism--transient-name (format "Exercism actions (current track: %s)" newval))))
+
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
-  [,(format "Exercism actions (current track: %s)" (or exercism--current-track "N/A"))
+  [exercism--transient-name
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
