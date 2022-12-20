@@ -232,9 +232,12 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
         (when (file-exists-p exercise-dir)
           (find-file exercise-dir))))))
 
+(defun exercism--transient-name ()
+  (format "Exercism actions (current track: %s)" (or exercism--current-track "N/A")))
+
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
-  [,(format "Exercism actions (current track: %s)" (or exercism--current-track "N/A"))
+  [:description exercism--transient-name
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
