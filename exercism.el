@@ -31,7 +31,6 @@
 (defvar exercism--api-token)
 (defvar exercism--exercise-slug)
 (defvar exercism--track-slug)
-(defvar exercism--implementation-file-paths)
 (defvar exercism--shell-cmd)
 
 (persist-defvar exercism--current-track nil "Current track.")
@@ -127,14 +126,11 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
                                                             (a-get it 'is_unlocked)))))))
                      (funcall resolve exercise-slugs))))))))
 
-(defun exercism--submit (implementation-file-paths &optional open-in-browser-after?)
-  "Submit your solution in IMPLEMENTATION-FILE-PATHS.
+(defun exercism--submit (&optional open-in-browser-after?)
+  "Submits your solution in the current directory.
 If OPEN-IN-BROWSER-AFTER? is non-nil, the browser's opened for
 you to complete your solution."
-  (setq exercism--implementation-file-paths implementation-file-paths)
-  (exercism--run-shell-command (format "%s submit %s"
-                                       (shell-quote-argument exercism-executable)
-                                       (shell-quote-argument exercism--implementation-file-paths))
+  (exercism--run-shell-command (format "%s submit" (shell-quote-argument exercism-executable))
                                (lambda (result)
                                  (message "[exercism] submit: %s" result)
                                  ;; Result looks something like:
@@ -151,12 +147,12 @@ you to complete your solution."
 (defun exercism-submit ()
   "Submit your implementation."
   (interactive)
-  (exercism--submit (buffer-file-name)))
+  (exercism--submit))
 
 (defun exercism-submit-then-open-in-browser ()
   "Submit your implementation then open the submission page in your browser."
   (interactive)
-  (exercism--submit (buffer-file-name) t))
+  (exercism--submit t))
 
 (async-defun exercism--track-init (track-slug)
   "Init a track (via TRACK-SLUG).
