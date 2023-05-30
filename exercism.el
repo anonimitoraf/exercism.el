@@ -34,6 +34,7 @@
 (defvar exercism--shell-cmd)
 
 (persist-defvar exercism--current-track nil "Current track.")
+(persist-defvar exercism--current-exercise nil "Current exercise.")
 
 (defcustom exercism-executable "exercism"
   "Executable name/location."
@@ -218,7 +219,8 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
                                      exercise-options (-const t) t)))
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
-        (find-file exercise-dir)
+        (progn (find-file exercise-dir)
+               (setq exercism--current-exercise exercise))
       (message "[exercism] downloading %s exercise %s... (please wait)" exercism--current-track exercise)
       (let ((result (await (exercism--download-exercise exercise exercism--current-track))))
         (message "[exercism] download result: %s" result)
@@ -226,7 +228,8 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
         ;; will be the same. Instead retrieve it from the
         ;; download response?
         (when (file-exists-p exercise-dir)
-          (find-file exercise-dir))))))
+          (find-file exercise-dir))
+        (setq exercism--current-exercise exercise)))))
 
 (defun exercism--transient-name ()
   (format "Exercism actions (current track: %s)" (or exercism--current-track "N/A")))
