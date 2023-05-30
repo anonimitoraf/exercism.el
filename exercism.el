@@ -127,6 +127,23 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
                                                             (a-get it 'is_unlocked)))))))
                      (funcall resolve exercise-slugs))))))))
 
+(defun exercism--file-to-string (file-path)
+  (with-temp-buffer
+    (insert-file-contents file-path)
+    (buffer-string)))
+
+(defun exercism--get-config (exercise-dir)
+  (let* ((config (exercism--file-to-string
+                  (expand-file-name "config.json" (concat exercise-dir "/" ".exercism")))))
+    (json-parse-string config
+                       :object-type 'alist
+                       :array-type 'list)))
+
+(defun exercism--get-solution-files (exercise-dir)
+  (let* ((config (exercism--get-config exercise-dir))
+         (solution-file-paths (a-get-in config '(files solution))))
+    solution-file-paths))
+
 (defun exercism--submit (&optional open-in-browser-after?)
   "Submits your solution in the current directory.
 If OPEN-IN-BROWSER-AFTER? is non-nil, the browser's opened for
