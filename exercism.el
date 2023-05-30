@@ -148,19 +148,26 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
   "Submits your solution in the current directory.
 If OPEN-IN-BROWSER-AFTER? is non-nil, the browser's opened for
 you to complete your solution."
-  (exercism--run-shell-command (format "%s submit" (shell-quote-argument exercism-executable))
-                               (lambda (result)
-                                 (message "[exercism] submit: %s" result)
-                                 ;; Result looks something like:
-                                 ;; Your solution has been submitted successfully.
-                                 ;; View it at:
-                                 ;;
-                                 ;;
-                                 ;; https://exercism.org/tracks/javascript/exercises/hello-world
-                                 (when open-in-browser-after?
-                                   (when (string-match "\\(https://exercism\\.org.*\\)" result)
-                                     (browse-url (match-string 1 result)))
-                                   (message "[exercism] submit: %s" result)))))
+  (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
+         (exercise-dir (expand-file-name exercism--current-exercise track-dir))
+         (solution-files (exercism--get-solution-files exercise-dir))
+         (default-directory exercise-dir)
+         (submit-command (s-join " " (list
+                                      (shell-quote-argument exercism-executable) "submit"
+                                      (s-join " " solution-files)))))
+    (exercism--run-shell-command submit-command
+                                 (lambda (result)
+                                   (message "[exercism] submit: %s" result)
+                                   ;; Result looks something like:
+                                   ;; Your solution has been submitted successfully.
+                                   ;; View it at:
+                                   ;;
+                                   ;;
+                                   ;; https://exercism.org/tracks/javascript/exercises/hello-world
+                                   (when open-in-browser-after?
+                                     (when (string-match "\\(https://exercism\\.org.*\\)" result)
+                                       (browse-url (match-string 1 result)))
+                                     (message "[exercism] submit: %s" result))))))
 
 (defun exercism-submit ()
   "Submit your implementation."
