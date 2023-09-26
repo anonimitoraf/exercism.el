@@ -49,6 +49,12 @@
   :type 'string
   :group 'exercism)
 
+(defcustom exercism-display-tests-after-run
+  nil
+  "If set to t, after command 'Run tests', automatically display the results buffer."
+  :type 'boolean
+  :group 'exercism)
+
 (defmacro exercism--debug (form)
   "Print out FORM and the evaluation result."
   `(let ((result ,form))
@@ -278,15 +284,44 @@ Turn '3.26.1' into something like: 3_026_001."
 ;; (exercism--compare-semvers "3.26.1" #'> "3.3.2") ;; => t
 ;; (exercism--compare-semvers "3.2.1" #'> "3.10.1") ;; => nil
 
+(defun exercism--cli-version ()
+  "Gets out the CLI version."
+  (promise-new (lambda (resolve _)
+                 (exercism--run-shell-command
+                  (concat (shell-quote-argument exercism-executable) " version")
+                  (lambda (result)
+                    (let ((version (when (string-match "exercism version \\([0-9.]+\\)" result)
+                                     (match-string 1 result))))
+                      (funcall resolve version)))))))
+
 (async-defun exercism-cli-version ()
   "Prints out the CLI version."
   (interactive)
-  (exercism--run-shell-command
-   (concat (shell-quote-argument exercism-executable) " version")
-   (lambda (result)
-     (let ((version (when (string-match "exercism version \\([0-9.]+\\)" result)
-                      (match-string 1 result))))
-       (message "[exercism] version: %s" version)))))
+  (message "[exercism] version: %s" (await (exercism--cli-version))))
+
+(async-defun exercism-run-tests ()
+  "Runs the tests for the currently selected exercise"
+  (interactive)
+  (let* ((version (await (exercism--cli-version)))
+         (min-version "3.2.0")
+         (track-dir (expand-file-name exercism--current-track exercism-directory))
+         (exercise-dir (expand-file-name exercism--current-exercise track-dir))
+         ;; TODO Maybe use a macro that sets the dir? e.g. (with-current-track ...)
+         (default-directory exercise-dir)
+         (tests-buffer (get-buffer-create "*exercism-test*")))
+    (if (exercism--compare-semvers version #'< min-version)
+        (message "[exercism] error: running tests is only supported for CLI version %s and above. You are on %s"
+                 min-version version)
+      (exercism--run-shell-command
+       (concat (shell-quote-argument exercism-executable) " test")
+       (lambda (result)
+         (with-current-buffer tests-buffer
+           (erase-buffer)
+           (insert (format "%s\n(TEST RESULTS FOR %s - %s)"
+                           result exercism--current-track exercism--current-exercise)))
+         (when exercism-display-tests-after-run
+           (pop-to-buffer tests-buffer)
+           (goto-char (point-max))))))))
 
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
@@ -295,6 +330,7 @@ Turn '3.26.1' into something like: 3_026_001."
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
+   ("r" "Run tests" exercism-run-tests)
    ("s" "Submit" exercism-submit)
    ;; TODO Use a transient flag instead of a separate prefix
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
