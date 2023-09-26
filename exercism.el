@@ -233,6 +233,8 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
                                            (t "blue")))
             "    " (exercism--color-string blurb "grey50"))))
 
+;; TODO First check if the exercise is already downloaded.
+;; That way, a user can download all the exercises and work completely offline!
 (async-defun exercism-open-exercise ()
   "Open an exercise from the currently selected track."
   (interactive)
