@@ -47,6 +47,12 @@ This is only here for backwards-compatibility."
   :type 'string
   :group 'exercism)
 
+(defcustom exercism-display-tests-after-run
+  nil
+  "If set to t, after command 'Run tests', automatically display the results buffer."
+  :type 'boolean
+  :group 'exercism)
+
 (persist-defvar exercism--current-track nil "Current track.")
 (persist-defvar exercism--current-exercise nil "Current exercise.")
 (persist-defvar exercism--workspace exercism-directory "Root dir for all the files")
@@ -242,6 +248,8 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
                                            (t "blue")))
             "    " (exercism--color-string blurb "grey50"))))
 
+;; TODO First check if the exercise is already downloaded.
+;; That way, a user can download all the exercises and work completely offline!
 (async-defun exercism-open-exercise ()
   "Open an exercise from the currently selected track."
   (interactive)
@@ -273,12 +281,73 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
 (defun exercism--transient-name ()
   (format "Exercism actions (current track: %s)" (or exercism--current-track "N/A")))
 
+(defun exercism--semver-to-number (semver)
+  "Rudimentary conversion of semvers to a numerical value that can be compared easily.
+Turn '3.26.1' into something like: 3_026_001."
+  (let ((portions (split-string semver "\\."))
+        (portion-idx 0))
+    (seq-reduce (lambda (sum n)
+                  (message "N %s" (* (expt 1000 portion-idx) (string-to-number n)))
+                  (prog1 (+ sum (* (expt 1000 portion-idx) (string-to-number n)))
+                    (setq portion-idx (1+ portion-idx))))
+                (reverse portions) 0)))
+
+;; (exercism--semver-to-number "3.26.1") ;; => 3026001
+
+(defun exercism--compare-semvers (ver1 op ver2)
+  "Compares VER1 and VER2 as numerical values with the operator OP."
+  (funcall op (exercism--semver-to-number ver1) (exercism--semver-to-number ver2)))
+
+;; (exercism--compare-semvers "3.26.1" #'> "3.3.2") ;; => t
+;; (exercism--compare-semvers "3.2.1" #'> "3.10.1") ;; => nil
+
+(defun exercism--cli-version ()
+  "Gets out the CLI version."
+  (promise-new (lambda (resolve _)
+                 (exercism--run-shell-command
+                  (concat (shell-quote-argument exercism-executable) " version")
+                  (lambda (result)
+                    (let ((version (when (string-match "exercism version \\([0-9.]+\\)" result)
+                                     (match-string 1 result))))
+                      (funcall resolve version)))))))
+
+(async-defun exercism-cli-version ()
+  "Prints out the CLI version."
+  (interactive)
+  (message "[exercism] version: %s" (await (exercism--cli-version))))
+
+(async-defun exercism-run-tests ()
+  "Runs the tests for the currently selected exercise"
+  (interactive)
+  (let* ((version (await (exercism--cli-version)))
+         (min-version "3.2.0")
+         (track-dir (expand-file-name exercism--current-track exercism-directory))
+         (exercise-dir (expand-file-name exercism--current-exercise track-dir))
+         ;; TODO Maybe use a macro that sets the dir? e.g. (with-current-track ...)
+         (default-directory exercise-dir)
+         (tests-buffer (get-buffer-create "*exercism-test*")))
+    (if (exercism--compare-semvers version #'< min-version)
+        (message "[exercism] error: running tests is only supported for CLI version %s and above. You are on %s"
+                 min-version version)
+      (exercism--run-shell-command
+       (concat (shell-quote-argument exercism-executable) " test")
+       (lambda (result)
+         (with-current-buffer tests-buffer
+           (erase-buffer)
+           (insert (format "%s\n(TEST RESULTS FOR %s - %s)"
+                           result exercism--current-track exercism--current-exercise)))
+         (when exercism-display-tests-after-run
+           (pop-to-buffer tests-buffer)
+           (goto-char (point-max))))))))
+
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
   [:description exercism--transient-name
+   ("v" "Display CLI version" exercism-cli-version)
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
+   ("r" "Run tests" exercism-run-tests)
    ("s" "Submit" exercism-submit)
    ;; TODO Use a transient flag instead of a separate prefix
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
