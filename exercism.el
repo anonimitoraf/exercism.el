@@ -258,9 +258,40 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
 (defun exercism--transient-name ()
   (format "Exercism actions (current track: %s)" (or exercism--current-track "N/A")))
 
+(defun exercism--semver-to-number (semver)
+  "Rudimentary conversion of semvers to a numerical value that can be compared easily.
+Turn '3.26.1' into something like: 3_026_001."
+  (let ((portions (split-string semver "\\."))
+        (portion-idx 0))
+    (seq-reduce (lambda (sum n)
+                  (message "N %s" (* (expt 1000 portion-idx) (string-to-number n)))
+                  (prog1 (+ sum (* (expt 1000 portion-idx) (string-to-number n)))
+                    (setq portion-idx (1+ portion-idx))))
+                (reverse portions) 0)))
+
+;; (exercism--semver-to-number "3.26.1") ;; => 3026001
+
+(defun exercism--compare-semvers (ver1 op ver2)
+  "Compares VER1 and VER2 as numerical values with the operator OP."
+  (funcall op (exercism--semver-to-number ver1) (exercism--semver-to-number ver2)))
+
+;; (exercism--compare-semvers "3.26.1" #'> "3.3.2") ;; => t
+;; (exercism--compare-semvers "3.2.1" #'> "3.10.1") ;; => nil
+
+(async-defun exercism-cli-version ()
+  "Prints out the CLI version."
+  (interactive)
+  (exercism--run-shell-command
+   (concat (shell-quote-argument exercism-executable) " version")
+   (lambda (result)
+     (let ((version (when (string-match "exercism version \\([0-9.]+\\)" result)
+                      (match-string 1 result))))
+       (message "[exercism] version: %s" version)))))
+
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
   [:description exercism--transient-name
+   ("v" "Display CLI version" exercism-cli-version)
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
