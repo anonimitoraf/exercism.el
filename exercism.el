@@ -33,9 +33,6 @@
 (defvar exercism--track-slug)
 (defvar exercism--shell-cmd)
 
-(persist-defvar exercism--current-track nil "Current track.")
-(persist-defvar exercism--current-exercise nil "Current exercise.")
-
 (defcustom exercism-executable "exercism"
   "Executable name/location."
   :type 'string
@@ -45,7 +42,8 @@
   (expand-file-name
    (cond ((eq system-type 'darwin) "~/Exercism")
          (t "~/exercism")))
-  "File path containing downloaded Exercism files."
+  "DEPRECATED: Hardcoded file path containing downloaded Exercism files.
+This is only here for backwards-compatibility."
   :type 'string
   :group 'exercism)
 
@@ -54,6 +52,10 @@
   "If set to t, after command 'Run tests', automatically display the results buffer."
   :type 'boolean
   :group 'exercism)
+
+(persist-defvar exercism--current-track nil "Current track.")
+(persist-defvar exercism--current-exercise nil "Current exercise.")
+(persist-defvar exercism--workspace exercism-directory "Root dir for all the files")
 
 (defmacro exercism--debug (form)
   "Print out FORM and the evaluation result."
@@ -73,13 +75,31 @@ Otherwise, just echoes the output."
      (if callback (funcall callback result)
        (message "[exercism shell cmd]: %s" result)))))
 
+(defun exercism--file-to-string (file-path)
+  "Read the contents of FILE-PATH to a string."
+  (with-temp-buffer
+    (insert-file-contents file-path)
+    (buffer-string)))
+
 (defun exercism--configure (api-token)
   "Configure excerism with API-TOKEN."
   (setq exercism--api-token api-token)
   (exercism--run-shell-command (concat (shell-quote-argument exercism-executable)
                                        " configure"
                                        " --token " (shell-quote-argument exercism--api-token))
-                               (lambda (result) (message "[exercism] configure: %s" result))))
+                               (lambda (result) (message "[exercism] configure: %s" result)
+                                 ;; {
+                                 ;;   "apibaseurl": "https://api.exercism.io/v1",
+                                 ;;   "token": "d4bfe622-92e1-4d36-a0ae-788712e03946",
+                                 ;;   "workspace": "/Users/raf/Exercism"
+                                 ;; }
+                                 (let* ((user-config-path (expand-file-name "~/.config/exercism/user.json"))
+                                       (user-config-str (exercism--file-to-string user-config-path))
+                                       (user-config (json-parse-string user-config-str
+                                                                       :object-type 'alist
+                                                                       :array-type 'list))
+                                       (workspace (alist-get 'workspace user-config)))
+                                   (setq exercism--workspace workspace)))))
 
 (defun exercism-configure ()
   "Configure exercism."
@@ -133,11 +153,6 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
                                                             (a-get it 'is_unlocked)))))))
                      (funcall resolve exercise-slugs))))))))
 
-(defun exercism--file-to-string (file-path)
-  (with-temp-buffer
-    (insert-file-contents file-path)
-    (buffer-string)))
-
 (defun exercism--get-config (exercise-dir)
   (let* ((config (exercism--file-to-string
                   (expand-file-name "config.json" (concat exercise-dir "/" ".exercism")))))
@@ -154,7 +169,7 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
   "Submits your solution in the current directory.
 If OPEN-IN-BROWSER-AFTER? is non-nil, the browser's opened for
 you to complete your solution."
-  (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
+  (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace))
          (exercise-dir (expand-file-name exercism--current-exercise track-dir))
          (solution-files (exercism--get-solution-files exercise-dir))
          (default-directory exercise-dir)
@@ -198,7 +213,7 @@ This is done by downloading the hello-world exercise."
   (interactive)
   (let* ((tracks (await (exercism--list-tracks)))
          (track (completing-read "Choose track: " tracks (-const t) t))
-         (track-dir (expand-file-name track exercism-directory)))
+         (track-dir (expand-file-name track exercism--workspace)))
     (unless (file-exists-p track-dir) (await (exercism--track-init track)))
     (setq exercism--current-track track)
     (message "[exercism] set current track to: %s" track)))
@@ -239,7 +254,7 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
   "Open an exercise from the currently selected track."
   (interactive)
   (unless exercism--current-track (exercism-set-track))
-  (let* ((track-dir (expand-file-name exercism--current-track exercism-directory))
+  (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace))
          (track-exercises (await (exercism--list-exercises exercism--current-track t)))
          (_ (setq exercism--longest-exercise-slug-length (exercism--exercises->longest track-exercises 'slug)
                   exercism--longest-exercise-difficulty-length (exercism--exercises->longest track-exercises 'difficulty)))
