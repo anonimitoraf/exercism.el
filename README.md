@@ -30,6 +30,12 @@ Time to get into it! Note that some exercises may still be unlocked, yet "select
 
 <img src="./demos/open-exercise.png" width=700 />
 
+## `Run tests`
+Run tests! You can see the results in the `*exercism-test*` buffer.
+If you want this buffer to automatically "pop-up" after the tests run, set `exercism-display-tests-after-run` to `t`.
+
+(Only for CLI version 3.2.0 onwards, (run `exercism-cli-version` to check))
+
 ## `Submit`
 Submits the current directory as a solution. Note that to mark the exercise as "completed", you'll have to do it via the web app.
 
