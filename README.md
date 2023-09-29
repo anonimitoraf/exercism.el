@@ -26,7 +26,7 @@ https://user-images.githubusercontent.com/15933322/190892930-2ff737ae-f672-4688-
 https://user-images.githubusercontent.com/15933322/190892892-02f53f4c-07f8-4d85-ad2c-19ff1351c37a.mp4
 
 ## `Open an exercise`
-Time to get into it! Note that some exercises may still be unlocked, yet "select-able" (see the "Known Limitations" section).
+Time to get into it! Note that some exercises are actually still locked, yet "select-able" (see the "Known Limitations" section).
 
 <img src="./demos/open-exercise.png" width=700 />
 
