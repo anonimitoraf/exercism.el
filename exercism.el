@@ -144,14 +144,14 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
        :success (cl-function
                  (lambda (&key data &allow-other-keys)
                    (let* ((exercises (a-get data 'exercises))
-                          (exercise-slugs (->> (cl-map #'list #'identity exercises)
+                          (filtered-exercises (->> (cl-map #'list #'identity exercises)
                                                ;; TODO Find out how to use web session so we
                                                ;; can correctly filter out only unlocked exercises.
                                                ;; Currently, all exercises are "unlocked"
                                                (-filter (lambda (it)
                                                           (if (not only-unlocked?) t
                                                             (a-get it 'is_unlocked)))))))
-                     (funcall resolve exercise-slugs))))))))
+                     (funcall resolve filtered-exercises))))))))
 
 (defun exercism--get-config (exercise-dir)
   (let* ((config (exercism--file-to-string
