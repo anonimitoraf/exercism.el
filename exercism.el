@@ -262,7 +262,7 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
                                    (list (s-pad-right exercism--longest-exercise-slug-length " " (a-get exercise 'slug)) exercise))
                                  track-exercises))
          (completion-extra-properties '(:annotation-function exercism--exercise-annotation-fn))
-         (exercise (s-trim (completing-read (format "Choose an exercise (%s): " exercism--current-track)
+         (exercise (s-trim (completing-read (format "[exercism] (%s) Choose an exercise: " exercism--current-track)
                                      exercise-options (-const t) t)))
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
