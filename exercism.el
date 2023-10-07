@@ -117,7 +117,7 @@ Otherwise, just echoes the output."
                                           " --exercise=" (shell-quote-argument exercism--exercise-slug)
                                           " --track=" (shell-quote-argument exercism--track-slug))
                                   (lambda (result)
-                                    (message "[exercism] download exercise: %s" result)
+                                    (message "[exercism] download result for %s: %s" exercise-slug result)
                                     (funcall resolve result))))))
 
 (defun exercism--list-tracks ()
@@ -144,14 +144,14 @@ If ONLY-UNLOCKED? is non-nil, only lists unlocked lessons."
        :success (cl-function
                  (lambda (&key data &allow-other-keys)
                    (let* ((exercises (a-get data 'exercises))
-                          (exercise-slugs (->> (cl-map #'list #'identity exercises)
+                          (filtered-exercises (->> (cl-map #'list #'identity exercises)
                                                ;; TODO Find out how to use web session so we
                                                ;; can correctly filter out only unlocked exercises.
                                                ;; Currently, all exercises are "unlocked"
                                                (-filter (lambda (it)
                                                           (if (not only-unlocked?) t
                                                             (a-get it 'is_unlocked)))))))
-                     (funcall resolve exercise-slugs))))))))
+                     (funcall resolve filtered-exercises))))))))
 
 (defun exercism--get-config (exercise-dir)
   (let* ((config (exercism--file-to-string
@@ -248,8 +248,6 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
                                            (t "blue")))
             "    " (exercism--color-string blurb "grey50"))))
 
-;; TODO First check if the exercise is already downloaded.
-;; That way, a user can download all the exercises and work completely offline!
 (async-defun exercism-open-exercise ()
   "Open an exercise from the currently selected track."
   (interactive)
@@ -262,7 +260,7 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
                                    (list (s-pad-right exercism--longest-exercise-slug-length " " (a-get exercise 'slug)) exercise))
                                  track-exercises))
          (completion-extra-properties '(:annotation-function exercism--exercise-annotation-fn))
-         (exercise (s-trim (completing-read (format "Choose an exercise (%s): " exercism--current-track)
+         (exercise (s-trim (completing-read (format "[exercism] (%s) Choose an exercise: " exercism--current-track)
                                      exercise-options (-const t) t)))
          (exercise-dir (expand-file-name exercise track-dir)))
     (if (file-exists-p exercise-dir)
@@ -278,8 +276,44 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
           (find-file exercise-dir))
         (setq exercism--current-exercise exercise)))))
 
+(async-defun exercism-download-all-unlocked-exercises ()
+  "Download all the unlocked exercises."
+  (interactive)
+  (unless exercism--current-track (exercism-set-track))
+  (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace))
+         (track-exercises (await (exercism--list-exercises exercism--current-track t))))
+    (seq-doseq (exercise track-exercises)
+      (let* ((slug (a-get exercise 'slug))
+             (exercise-dir (expand-file-name slug track-dir)))
+        (unless (file-exists-p exercise-dir)
+          (message "[exercism] attempting to download %s exercise %s..." exercism--current-track slug)
+          (exercism--download-exercise slug exercism--current-track))))))
+
+;; (exercism-download-all-unlocked-exercises)
+
+(defun exercism--list-downloaded-exercises ()
+  (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace)))
+    (seq-filter (lambda (file) (not (seq-contains-p '("." "..") file)))
+                (directory-files track-dir))))
+
+;; (exercism--list-downloaded-exercises)
+
+(defun exercism-open-exercise-offline ()
+  "Select and open an already downloaded exercise from the currently selected track."
+  (interactive)
+  (unless exercism--current-track (exercism-set-track))
+  (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace))
+         (downloaded-exercise-slugs (exercism--list-downloaded-exercises))
+         (exercise (s-trim (completing-read (format "[exercism]: (%s) Choose a downloaded exercise: " exercism--current-track)
+                                     downloaded-exercise-slugs (-const t) t)))
+         (exercise-dir (expand-file-name exercise track-dir)))
+    (progn (find-file exercise-dir)
+           (setq exercism--current-exercise exercise))))
+
 (defun exercism--transient-name ()
-  (format "Exercism actions (current track: %s)" (or exercism--current-track "N/A")))
+  (format "Exercism actions | TRACK: %s | EXERCISE: %s"
+          (or exercism--current-track "N/A")
+          (or exercism--current-exercise "N/A")))
 
 (defun exercism--semver-to-number (semver)
   "Rudimentary conversion of semvers to a numerical value that can be compared easily.
@@ -287,7 +321,6 @@ Turn '3.26.1' into something like: 3_026_001."
   (let ((portions (split-string semver "\\."))
         (portion-idx 0))
     (seq-reduce (lambda (sum n)
-                  (message "N %s" (* (expt 1000 portion-idx) (string-to-number n)))
                   (prog1 (+ sum (* (expt 1000 portion-idx) (string-to-number n)))
                     (setq portion-idx (1+ portion-idx))))
                 (reverse portions) 0)))
@@ -346,6 +379,8 @@ Turn '3.26.1' into something like: 3_026_001."
    ("v" "Display CLI version" exercism-cli-version)
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
+   ("d" "Download all unlocked exercises" exercism-download-all-unlocked-exercises)
+   ("e" "Open a downloaded exercise" exercism-open-exercise-offline)
    ("o" "Open an exercise" exercism-open-exercise)
    ("r" "Run tests" exercism-run-tests)
    ("s" "Submit" exercism-submit)
@@ -353,6 +388,7 @@ Turn '3.26.1' into something like: 3_026_001."
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
 
 ;; TODO Command to update CLI
+;; TODO Ability to download all exercises
 ;; TODO Order exercises by suggested order of completion
 
 (provide 'exercism)

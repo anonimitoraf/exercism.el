@@ -27,8 +27,16 @@ https://user-images.githubusercontent.com/15933322/190892892-02f53f4c-07f8-4d85-
 
 ## `Open an exercise`
 Time to get into it! Note that some exercises are actually still locked, yet "select-able" (see the "Known Limitations" section).
+Note that you need to have a network connection (since this package needs to query the exercism API). If you need to work offline,
+pre-download all the exercises beforehand (see `Download all unlocked exercises`).
 
 <img src="./demos/open-exercise.png" width=700 />
+
+## `Download all unlocked exercises`
+If you want to do all the exercises locally, you can download them all. Note that this only includes exercises unlocked for you.
+
+## `Open a downloaded exercise`
+If you are working offline and have downloaded exercises previously, you can open one of those.
 
 ## `Run tests`
 Run tests! You can see the results in the `*exercism-test*` buffer.
