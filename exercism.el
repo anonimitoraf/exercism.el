@@ -117,7 +117,7 @@ Otherwise, just echoes the output."
                                           " --exercise=" (shell-quote-argument exercism--exercise-slug)
                                           " --track=" (shell-quote-argument exercism--track-slug))
                                   (lambda (result)
-                                    (message "[exercism] download exercise: %s" result)
+                                    (message "[exercism] download result for %s: %s" exercise-slug result)
                                     (funcall resolve result))))))
 
 (defun exercism--list-tracks ()
