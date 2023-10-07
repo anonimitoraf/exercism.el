@@ -287,7 +287,6 @@ Turn '3.26.1' into something like: 3_026_001."
   (let ((portions (split-string semver "\\."))
         (portion-idx 0))
     (seq-reduce (lambda (sum n)
-                  (message "N %s" (* (expt 1000 portion-idx) (string-to-number n)))
                   (prog1 (+ sum (* (expt 1000 portion-idx) (string-to-number n)))
                     (setq portion-idx (1+ portion-idx))))
                 (reverse portions) 0)))
