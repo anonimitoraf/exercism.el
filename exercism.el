@@ -279,7 +279,9 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
         (setq exercism--current-exercise exercise)))))
 
 (defun exercism--transient-name ()
-  (format "Exercism actions (current track: %s)" (or exercism--current-track "N/A")))
+  (format "Exercism actions | TRACK: %s | EXERCISE: %s"
+          (or exercism--current-track "N/A")
+          (or exercism--current-exercise "N/A")))
 
 (defun exercism--semver-to-number (semver)
   "Rudimentary conversion of semvers to a numerical value that can be compared easily.
