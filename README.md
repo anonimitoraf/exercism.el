@@ -32,7 +32,7 @@ pre-download all the exercises beforehand (see `Download all unlocked exercises`
 
 <img src="./demos/open-exercise.png" width=700 />
 
-## `Download all unlocked exericses`
+## `Download all unlocked exercises`
 If you want to do all the exercises locally, you can download them all. Note that this only includes exercises unlocked for you.
 
 ## `Open a downloaded exercise`

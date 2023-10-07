@@ -379,7 +379,7 @@ Turn '3.26.1' into something like: 3_026_001."
    ("v" "Display CLI version" exercism-cli-version)
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
-   ("d" "Downloads all your unlocked exercises" exercism-download-all-unlocked-exercises)
+   ("d" "Download all unlocked exercises" exercism-download-all-unlocked-exercises)
    ("e" "Open a downloaded exercise" exercism-open-exercise-offline)
    ("o" "Open an exercise" exercism-open-exercise)
    ("r" "Run tests" exercism-run-tests)
