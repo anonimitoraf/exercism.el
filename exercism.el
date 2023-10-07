@@ -278,6 +278,25 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
           (find-file exercise-dir))
         (setq exercism--current-exercise exercise)))))
 
+(defun exercism--list-downloaded-exercises ()
+  (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace)))
+    (seq-filter (lambda (file) (not (seq-contains-p '("." "..") file)))
+                (directory-files track-dir))))
+
+;; (exercism--list-downloaded-exercises)
+
+(defun exercism-open-exercise-offline ()
+  "Selects and opens an already downloaded exercise from the currently selected track."
+  (interactive)
+  (unless exercism--current-track (exercism-set-track))
+  (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace))
+         (downloaded-exercises (exercism--list-downloaded-exercises))
+         (exercise (s-trim (completing-read (format "[exercism]: (%s) Choose a downloaded exercise: " exercism--current-track)
+                                     downloaded-exercises (-const t) t)))
+         (exercise-dir (expand-file-name exercise track-dir)))
+    (progn (find-file exercise-dir)
+           (setq exercism--current-exercise exercise))))
+
 (defun exercism--transient-name ()
   (format "Exercism actions | TRACK: %s | EXERCISE: %s"
           (or exercism--current-track "N/A")
@@ -348,6 +367,7 @@ Turn '3.26.1' into something like: 3_026_001."
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
    ("o" "Open an exercise" exercism-open-exercise)
+   ("d" "Open a downloaded exercise" exercism-open-exercise-offline)
    ("r" "Run tests" exercism-run-tests)
    ("s" "Submit" exercism-submit)
    ;; TODO Use a transient flag instead of a separate prefix
