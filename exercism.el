@@ -354,6 +354,7 @@ Turn '3.26.1' into something like: 3_026_001."
    ("S" "Submit (then open in browser)" exercism-submit-then-open-in-browser)])
 
 ;; TODO Command to update CLI
+;; TODO Ability to download all exercises
 ;; TODO Order exercises by suggested order of completion
 
 (provide 'exercism)
