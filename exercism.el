@@ -286,7 +286,7 @@ EXERCISE should be a list with the shape `(slug exercise-data)'."
 ;; (exercism--list-downloaded-exercises)
 
 (defun exercism-open-exercise-offline ()
-  "Selects and opens an already downloaded exercise from the currently selected track."
+  "Select and open an already downloaded exercise from the currently selected track."
   (interactive)
   (unless exercism--current-track (exercism-set-track))
   (let* ((track-dir (expand-file-name exercism--current-track exercism--workspace))
@@ -366,8 +366,8 @@ Turn '3.26.1' into something like: 3_026_001."
    ("v" "Display CLI version" exercism-cli-version)
    ("c" "Configure" exercism-configure)
    ("t" "Set current track" exercism-set-track)
+   ("e" "Open a downloaded exercise" exercism-open-exercise-offline)
    ("o" "Open an exercise" exercism-open-exercise)
-   ("d" "Open a downloaded exercise" exercism-open-exercise-offline)
    ("r" "Run tests" exercism-run-tests)
    ("s" "Submit" exercism-submit)
    ;; TODO Use a transient flag instead of a separate prefix
