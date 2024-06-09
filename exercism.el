@@ -47,12 +47,6 @@ This is only here for backwards-compatibility."
   :type 'string
   :group 'exercism)
 
-(defcustom exercism-display-tests-after-run
-  nil
-  "If set to t, after command 'Run tests', automatically display the results buffer."
-  :type 'boolean
-  :group 'exercism)
-
 (persist-defvar exercism--current-track nil "Current track.")
 (persist-defvar exercism--current-exercise nil "Current exercise.")
 (persist-defvar exercism--workspace exercism-directory "Root dir for all the files")
@@ -350,7 +344,7 @@ Turn '3.26.1' into something like: 3_026_001."
   (message "[exercism] version: %s" (await (exercism--cli-version))))
 
 (async-defun exercism-run-tests ()
-  "Runs the tests for the currently selected exercise"
+  "Runs the tests for the currently selected exercise."
   (interactive)
   (let* ((version (await (exercism--cli-version)))
          (min-version "3.2.0")
@@ -358,20 +352,11 @@ Turn '3.26.1' into something like: 3_026_001."
          (exercise-dir (expand-file-name exercism--current-exercise track-dir))
          ;; TODO Maybe use a macro that sets the dir? e.g. (with-current-track ...)
          (default-directory exercise-dir)
-         (tests-buffer (get-buffer-create "*exercism-test*")))
+         (compile-command (concat (shell-quote-argument exercism-executable) " test")))
     (if (exercism--compare-semvers version #'< min-version)
         (message "[exercism] error: running tests is only supported for CLI version %s and above. You are on %s"
                  min-version version)
-      (exercism--run-shell-command
-       (concat (shell-quote-argument exercism-executable) " test")
-       (lambda (result)
-         (with-current-buffer tests-buffer
-           (erase-buffer)
-           (insert (format "%s\n(TEST RESULTS FOR %s - %s)"
-                           result exercism--current-track exercism--current-exercise)))
-         (when exercism-display-tests-after-run
-           (pop-to-buffer tests-buffer)
-           (goto-char (point-max))))))))
+      (compile compile-command))))
 
 (transient-define-prefix exercism ()
   "Bring up the Exercism action menu."
