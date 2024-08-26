@@ -47,6 +47,12 @@ This is only here for backwards-compatibility."
   :type 'string
   :group 'exercism)
 
+(defcustom exercism-config-path
+  (expand-file-name "~/.config/exercism/user.json")
+  "File path to the exercism CLI configuration file."
+  :type 'string
+  :group 'exercism)
+
 (persist-defvar exercism--current-track nil "Current track.")
 (persist-defvar exercism--current-exercise nil "Current exercise.")
 (persist-defvar exercism--workspace exercism-directory "Root dir for all the files")
@@ -87,7 +93,7 @@ Otherwise, just echoes the output."
                                  ;;   "token": "d4bfe622-92e1-4d36-a0ae-788712e03946",
                                  ;;   "workspace": "/Users/raf/Exercism"
                                  ;; }
-                                 (let* ((user-config-path (expand-file-name "~/.config/exercism/user.json"))
+                                 (let* ((user-config-path (expand-file-name exercism-config-path))
                                        (user-config-str (exercism--file-to-string user-config-path))
                                        (user-config (json-parse-string user-config-str
                                                                        :object-type 'alist
