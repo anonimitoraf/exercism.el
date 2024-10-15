@@ -354,7 +354,7 @@ Turn '3.26.1' into something like: 3_026_001."
   (interactive)
   (let* ((version (await (exercism--cli-version)))
          (min-version "3.2.0")
-         (track-dir (expand-file-name exercism--current-track exercism-directory))
+         (track-dir (expand-file-name exercism--current-track exercism--workspace))
          (exercise-dir (expand-file-name exercism--current-exercise track-dir))
          ;; TODO Maybe use a macro that sets the dir? e.g. (with-current-track ...)
          (default-directory exercise-dir)
