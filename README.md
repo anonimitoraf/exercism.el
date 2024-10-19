@@ -19,6 +19,21 @@ Download the `exercism` CLI by following [the official guide](https://exercism.o
 
 https://user-images.githubusercontent.com/15933322/190892930-2ff737ae-f672-4688-ab0d-7f655508da77.mov
 
+### `Path Configuration`
+Before customizing `exercism--workspace`, be sure to change it on the CLI first:
+
+```bash
+exercism -w "path/to/dir"
+```
+#### [no-littering](https://github.com/emacscollective/no-littering)
+Users of this package can "theme" the directory of this package rather simply:
+
+```emacs-lisp
+(setq (exercism--workspace (no-littering-expand-var-file-name "exercism/")))
+```
+
+This sets the workspace to the var directory inside your emacs folder.
+
 ## `Set current track`
   - Choose the track that you want to do exercises for.
   - This might take a few minutes the first time because it "initializes" the track locally. Subsequent invocations will be instant.
